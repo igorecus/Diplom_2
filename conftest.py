@@ -1,22 +1,18 @@
 import pytest
 import allure
 from faker import Faker
-from api_methods import register_user, login_user, logout_user, get_ingredients
-from helpers import random_email, random_name, random_password
+from api_methods import register_user, logout_user, get_ingredients
 from data.data import DEFAULT_PASSWORD
 
 fake = Faker(['ru_RU'])
 
-@pytest.fixture
-def faker():
-    return fake
 
 @pytest.fixture
-def user_credentials(faker):
+def registered_user():
     credentials = {
-        "email": faker.email(),
+        "email": fake.email(),
         "password": DEFAULT_PASSWORD,
-        "name": faker.name()
+        "name": fake.name()
     }
 
     allure.attach(
@@ -25,15 +21,10 @@ def user_credentials(faker):
         attachment_type=allure.attachment_type.TEXT
     )
 
-    return credentials
-
-@pytest.fixture
-def registered_user(user_credentials):
-    # Регистрация пользователя
     response = register_user(
-        user_credentials["email"],
-        user_credentials["password"],
-        user_credentials["name"]
+        credentials["email"],
+        credentials["password"],
+        credentials["name"]
     )
 
     response_json = response.json()
@@ -42,9 +33,9 @@ def registered_user(user_credentials):
     refresh_token = response_json.get("refreshToken")
 
     user_data = {
-        "email": user_credentials["email"],
-        "password": user_credentials["password"],
-        "name": user_credentials["name"],
+        "email": credentials["email"],
+        "password": credentials["password"],
+        "name": credentials["name"],
         "accessToken": access_token,
         "refreshToken": refresh_token
     }
@@ -53,7 +44,6 @@ def registered_user(user_credentials):
 
     if refresh_token:
         logout_user(refresh_token)
-
 
 @pytest.fixture
 def ingredient_ids():

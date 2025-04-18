@@ -21,7 +21,7 @@ class TestUserUpdate:
         assert response_json["success"] is True, "Ожидался success=True"
         assert response_json["user"]["name"] == new_name, "Имя не обновилось"
 
-    @allure.title("Обновление email авторизованного пользователя")
+    @allure.title("Попытка обновления email авторизованного пользователя")
     def test_update_email_authorized(self, registered_user, faker):
         new_email = faker.email()
 
@@ -31,9 +31,10 @@ class TestUserUpdate:
         )
         response_json = response.json()
 
-        assert response.status_code == 200, f"Ожидался код 200, получен {response.status_code}"
-        assert response_json["success"] is True, "Ожидался success=True"
-        assert response_json["user"]["email"] == new_email, "Email не обновился"
+        assert response.status_code == 403, f"Ожидался код 403, получен {response.status_code}"
+        assert response_json["success"] is False, "Ожидался success=False"
+        assert "message" in response_json, "Поле 'message' отсутствует в ответе"
+        assert "email" in response_json["message"].lower(), "Сообщение об ошибке не содержит информацию о email"
 
     @allure.title("Обновление пароля авторизованного пользователя")
     def test_update_password_authorized(self, registered_user, faker):
